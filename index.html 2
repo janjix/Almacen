@@ -375,9 +375,9 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 // ============================================================
 // SUPABASE
 // ============================================================
-const SU='TU_SUPABASE_URL',SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmdmp6ampyb254ZG1jaWRjcmplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzY1OTEsImV4cCI6MjA5MTMxMjU5MX0.KzdrGBN925OTNwgJ1aZW85i1jBY31m86k-wmOFJTrfM';
+const SU='https://bfvjzjjronxdmcidcrje.supabase.co',SK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJmdmp6ampyb254ZG1jaWRjcmplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MzY1OTEsImV4cCI6MjA5MTMxMjU5MX0.KzdrGBN925OTNwgJ1aZW85i1jBY31m86k-wmOFJTrfM';
 let sb=null,useSB=false;
-try{if(SU!=='bfvjzjjronxdmcidcrje'){sb=supabase.createClient(SU,SK);useSB=true;}}catch(e){}
+try{if(SU!=='TU_SUPABASE_URL'){sb=supabase.createClient(SU,SK);useSB=true;}}catch(e){}
 
 // STATE
 let user='',inv={},desp=[],parts=[],flt='todos',selMat=null,parsedMat=null,editId=null;
