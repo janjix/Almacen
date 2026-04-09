@@ -168,6 +168,8 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .ai .aiq{font-weight:700;color:var(--r500);white-space:nowrap}
 .ai .aim{font-size:10px;color:var(--bkm);white-space:nowrap}
 .ai .aip{font-size:10px;color:var(--bl);font-weight:600;white-space:nowrap}
+.ai .aie{padding:3px 7px;font-size:10px;font-weight:600;background:var(--bl1);color:var(--bl);border:none;border-radius:6px;cursor:pointer;touch-action:manipulation;white-space:nowrap;flex-shrink:0}
+.ai .aie:active{background:#d0e6f9}
 .p-actions{display:flex;gap:6px;padding:10px 16px;border-top:1px solid var(--g200);background:var(--g100)}
 
 /* Partidas */
@@ -344,6 +346,24 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <div class="fg"><label class="fl">Nombre actual</label><input type="text" class="fi" id="epOld" disabled></div>
     <div class="fg"><label class="fl">Nuevo nombre</label><input type="text" class="fi" id="epNew" autocomplete="off"></div>
     <div style="display:flex;gap:8px;margin-top:6px"><button class="btn bo" onclick="cM('mEditProj')" style="flex:1">Cancelar</button><button class="btn bp" onclick="saveProj()" style="flex:1">Guardar</button></div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR DESPACHO -->
+<div class="mov" id="mEditDesp" onclick="if(event.target===this)cM('mEditDesp')">
+  <div class="mo">
+    <h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Editar despacho</h3>
+    <div id="edDespInfo" style="margin-bottom:10px"></div>
+    <div class="fg"><label class="fl">Cantidad</label><input type="number" class="fi" id="edDCant" inputmode="decimal"></div>
+    <div class="fg" id="edDM2G"><label class="fl">M² usados</label><input type="number" class="fi" id="edDM2" inputmode="decimal" step="0.01"></div>
+    <div class="fg"><label class="fl">Proyecto</label><input type="text" class="fi" id="edDProy" autocomplete="off"></div>
+    <div class="fg"><label class="fl">Área</label><input type="text" class="fi" id="edDArea" autocomplete="off"></div>
+    <div class="fg ac-wrap"><label class="fl">Partida</label><input type="text" class="fi" id="edDPart" placeholder="Ej: P-001 Mueble cocina" autocomplete="off" oninput="acShow(this,'part')"><div class="ac-list" id="ac-edDPart"></div></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn bo" onclick="cM('mEditDesp')" style="flex:1">Cancelar</button>
+      <button class="btn bp" onclick="saveDespEdit()" style="flex:1">Guardar</button>
+    </div>
+    <button class="btn bdo" onclick="delDesp()" style="margin-top:10px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>Eliminar despacho</button>
   </div>
 </div>
 
@@ -541,16 +561,47 @@ function editPart(id){const p=parts.find(x=>x.id===id);if(!p)return;const newNam
 function askDelPart(id){const p=parts.find(x=>x.id===id);if(!p)return;document.getElementById('confTitle').textContent='¿Eliminar partida?';document.getElementById('confText').textContent=p.code+' — '+p.name;document.getElementById('confBtn').onclick=async()=>{await delPartDB(id);cM('mConf');toast("Partida eliminada");rParts();};oM('mConf');}
 
 // ============================================================
-// PROYECTOS — with edit/delete, partidas shown
+// PROYECTOS — individual dispatches with edit, partidas shown
 // ============================================================
 function rProj(){const cont=document.getElementById('projList');if(!cont)return;if(!desp.length){cont.innerHTML=`<div class="es"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg><p>Sin despachos</p></div>`;return;}
 const proj={};desp.forEach(d=>{const p=d.proy||'Sin proyecto',a=d.area||'Sin área';if(!proj[p])proj[p]={areas:{},total:0};if(!proj[p].areas[a])proj[p].areas[a]=[];proj[p].areas[a].push(d);proj[p].total+=d.cant;});
 let h='';Object.keys(proj).sort().forEach(pn=>{const pr=proj[pn],aN=Object.keys(pr.areas).sort();h+=`<div class="pc"><div class="ph" onclick="this.classList.toggle('opn');this.nextElementSibling.classList.toggle('opn')"><h4><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>${pn}</h4><div style="display:flex;align-items:center;gap:8px"><span class="ps">${aN.length} área${aN.length>1?'s':''}</span><svg class="chv" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div></div><div class="pb">`;
 aN.forEach(an=>{const items=pr.areas[an];h+=`<div class="asec"><div class="atit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>${an}</div>`;
-const agg={};items.forEach(d=>{const k=d.matName;if(!agg[k])agg[k]={qty:0,m2:0,specs:d.matSpecs,partidas:new Set()};agg[k].qty+=d.cant;if(d.m2)agg[k].m2+=d.m2;if(d.partida)agg[k].partidas.add(d.partida);});
-for(const[name,data]of Object.entries(agg)){const pts=[...data.partidas].join(', ');h+=`<div class="ai"><span class="ain">${name} <span style="font-size:10px;color:var(--bkm)">${data.specs}</span></span>${pts?`<span class="aip">${pts}</span>`:''}<span class="aiq">${Number(data.qty).toFixed(data.qty%1?1:0)}</span>${data.m2?`<span class="aim">${data.m2.toFixed(1)}m²</span>`:''}</div>`;}h+=`</div>`;});
+items.forEach(d=>{const q=d.tipo==='tablero'?d.cant:Number(d.cant).toFixed(1);const partTag=d.partida?`<span class="aip">📋 ${d.partida}</span>`:`<span class="aip" style="color:var(--g300);font-style:italic">Sin partida</span>`;h+=`<div class="ai"><span class="ain">${d.matName} <span style="font-size:10px;color:var(--bkm)">${d.matSpecs}</span></span>${partTag}<span class="aiq">${q}${d.unit}</span>${d.m2?`<span class="aim">${d.m2.toFixed(1)}m²</span>`:''}<button class="aie" onclick="openEditDesp('${d.id}')">✏️</button></div>`;});
+h+=`</div>`;});
 h+=`<div class="p-actions"><button class="ba edt" onclick="editProj('${esc(pn)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Renombrar</button><button class="ba del" onclick="delProj('${esc(pn)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>Eliminar</button></div></div></div>`;});
 cont.innerHTML=h;}
+
+// EDIT INDIVIDUAL DESPACHO
+let editDespId=null;
+function openEditDesp(id){const d=desp.find(x=>x.id===id);if(!d)return;editDespId=id;
+document.getElementById('edDespInfo').innerHTML=`<div class="mn">${d.matName}</div><div class="ms">${d.matSpecs}</div>`;
+document.getElementById('edDCant').value=d.cant;document.getElementById('edDM2').value=d.m2||'';document.getElementById('edDM2G').style.display=d.tipo==='tablero'?'block':'none';
+document.getElementById('edDProy').value=d.proy;document.getElementById('edDArea').value=d.area;document.getElementById('edDPart').value=d.partida||'';
+oM('mEditDesp');}
+
+async function saveDespEdit(){if(!editDespId)return;const d=desp.find(x=>x.id===editDespId);if(!d)return;
+const newCant=parseFloat(document.getElementById('edDCant').value)||0;const newM2=parseFloat(document.getElementById('edDM2').value)||0;
+const newProy=document.getElementById('edDProy').value.trim();const newArea=document.getElementById('edDArea').value.trim();const newPart=document.getElementById('edDPart').value.trim();
+if(!newCant||newCant<=0){toast("Falta cantidad");return;}if(!newProy){toast("Falta proyecto");return;}if(!newArea){toast("Falta área");return;}
+// If quantity changed, adjust inventory
+const diff=newCant-d.cant;if(diff!==0&&d.matId&&inv[d.matId]){inv[d.matId].cantidad-=diff;await saveMat(inv[d.matId]);}
+d.cant=newCant;d.m2=newM2;d.proy=newProy;d.area=newArea;d.partida=newPart;
+if(useSB)await sb.from('despachos').update({cantidad:d.cant,m2:d.m2,proyecto:d.proy,area:d.area,partida:d.partida}).eq('id',d.id);
+else sLoc();
+cM('mEditDesp');editDespId=null;toast("Despacho actualizado");rAll();}
+
+async function delDesp(){if(!editDespId)return;const d=desp.find(x=>x.id===editDespId);if(!d)return;
+cM('mEditDesp');
+document.getElementById('confTitle').textContent='¿Eliminar despacho?';
+document.getElementById('confText').textContent=d.matName+' — '+d.cant+d.unit+' → '+d.proy;
+document.getElementById('confBtn').onclick=async()=>{
+// Return stock to inventory
+if(d.matId&&inv[d.matId]){inv[d.matId].cantidad+=d.cant;await saveMat(inv[d.matId]);}
+if(useSB)await sb.from('despachos').delete().eq('id',d.id);
+desp=desp.filter(x=>x.id!==d.id);if(!useSB)sLoc();
+cM('mConf');editDespId=null;toast("Despacho eliminado");rAll();};
+oM('mConf');}
 function editProj(name){document.getElementById('epOld').value=name;document.getElementById('epNew').value=name;oM('mEditProj');}
 async function saveProj(){const oldN=document.getElementById('epOld').value,newN=document.getElementById('epNew').value.trim();if(!newN){toast("Falta nombre");return;}await updateDespProy(oldN,newN);cM('mEditProj');toast("Proyecto renombrado");rProj();rRes();}
 function delProj(name){document.getElementById('confTitle').textContent='¿Eliminar proyecto?';document.getElementById('confText').textContent='Se borrarán todos los despachos de: '+name;document.getElementById('confBtn').onclick=async()=>{await deleteDespByProy(name);cM('mConf');toast("Proyecto eliminado");rAll();};oM('mConf');}
